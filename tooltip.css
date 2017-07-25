@@ -1,0 +1,81 @@
+.toggle {
+	margin-left: 4px;
+	display: inline-block;
+	border-radius: 50%;
+	height: 1rem;
+	width: 1rem;
+	background-color: grey;
+	cursor:pointer;
+}
+
+.toggle::after {
+	font-size: 1rem;
+	margin-left: .25rem;
+	content: '?';
+	color: white;
+}
+
+.modal {
+	display: flex;
+	max-width: 200px;
+	background-color: grey;
+	position: fixed;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.modal.hide {
+	display: none;
+}
+
+.arrow.hide {
+	display: none;
+}
+
+.modal .tooltip.text {
+	color: white;
+}
+
+.modal .close {
+	position: relative;
+	top: -2px;
+	right: -4px;
+	height: .25rem;
+	width: .25rem;
+}
+
+.modal .close::after {
+	cursor:pointer;
+	color: white;
+	content: '\2715';
+	font-family: arial;
+}
+
+.arrow {
+  width: 0; 
+  height: 0; 
+}
+
+.arrow.arrow-up {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid grey;
+}
+
+.arrow.arrow-down {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #f00;
+}
+
+.arrow.arrow-right {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid green;
+}
+
+.arrow.arrow-left {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent; 
+  border-right: 5px solid blue; 
+}

@@ -1,0 +1,257 @@
+<!-- Defines element markup -->
+<template>
+    <div class='row error hide'>
+        <div class='triangle'></div>
+        <p>
+        </p>
+    </div>
+    <div class='row'>
+        <label></label>
+        <tool-tip text="Calculations based on math."></tool-tip>
+
+        <input type='text'></input>
+    </div>
+    <style> @import "validatedinput.css" </style>
+</template>
+
+<script>
+(function(window, document, undefined) {
+    // Refers to the "importer", which is index.html
+    var thatDoc = document;
+
+    // Refers to the "importee", which is src/hello-world.html
+    var thisDoc =  (thatDoc._currentScript || thatDoc.currentScript).ownerDocument;
+
+    // Gets content from <template>
+    var template = thisDoc.querySelector('template').content;
+
+    // Creates an object based in the HTML Element prototype
+    var ValidatedInputProto = Object.create(HTMLElement.prototype);
+
+    // Creates the "value" attribute and sets a default value
+    ValidatedInputProto.value = 'World';
+    ValidatedInputProto.name = 'Input Label';
+    ValidatedInputProto.validKeys = "0123456789";
+    ValidatedInputProto.lastKeyPressed = null;
+    ValidatedInputProto.min = null;
+    ValidatedInputProto.max = null;
+
+    // Fires when an instance of the element is created
+    ValidatedInputProto.createdCallback = function() {
+        // Creates the shadow root
+        var shadowRoot = this.createShadowRoot();
+
+        // Adds a template clone into shadow root
+        var clone = thatDoc.importNode(template, true);
+        shadowRoot.appendChild(clone);
+
+        // Caches <strong> DOM query
+        this.input = shadowRoot.querySelector('input');
+        this.label = shadowRoot.querySelector('label');
+        this.error = shadowRoot.querySelector('.error');
+        this.tooltip = shadowRoot.querySelector('tool-tip');
+        this.errorMessage = shadowRoot.querySelector('.error p');
+
+        this.addEventListener("keypress", function (e) {
+
+            var valid = this.validate(e.key);
+
+            if( !valid ) {
+
+                e.preventDefault();
+
+            } else {
+
+              var currentValue = shadowRoot.querySelector('input').value;
+
+              if( this.isInRange(currentValue) ) {
+
+                this.setValid(true);
+
+                this.setAttribute("value", currentValue);
+
+              } else {
+
+                this.setValid(false);
+
+                this.updateError(true, "Number entered would be out of range. Entry was prevented.");
+
+                e.preventDefault();
+
+              }
+
+            }
+
+        });
+
+        this.error.addEventListener("click", function (e) {
+
+            shadowRoot.querySelector('.error').className = "row error hide";
+
+        });
+
+        // Checks if the "value" attribute has been overwritten
+        if ( this.hasAttribute('value') ) {
+
+            var val = this.getAttribute('value');
+            this.setValue(val);
+
+        } else {
+
+            this.setValue(this.value);
+
+        } 
+
+        if ( this.hasAttribute('name') ) {
+
+            var val = this.getAttribute('name');
+            this.setName(val);
+
+        } else {
+
+            this.setName(this.name);
+
+        }
+
+        if ( this.hasAttribute("min") ) {
+
+            var val = this.getAttribute("min");
+            this.setMin(val);
+
+        } 
+
+        if ( this.hasAttribute("max") ) {
+
+            var val = this.getAttribute("max");
+            this.setMax(val);
+
+        }
+
+    };
+
+    ValidatedInputProto.validate = function (key) {
+
+        if(this.validKeys.indexOf(key) === -1 && key !== "Enter") {
+
+            this.updateError(true, "key " + key + " is not an acceptable key. These are the acceptable keys: " + this.validKeys);
+
+            return false;
+
+        } else {
+
+            this.updateError(false);
+
+        }
+
+        this.setAttribute("lastKeyPressed", key);
+
+        return true;
+
+    };
+
+    ValidatedInputProto.isInRange = function(value) {
+
+        console.log("value: ", value);
+
+        if(!this.min && !this.max) return true;
+
+        if(this.min !== null && parseInt(this.min) > parseInt(value) ) {
+
+            // number would be too small
+
+            return false;
+        }
+
+        if(this.max !== null && parseInt(this.max) < parseInt(value) ) {
+
+            // number would be too big
+
+            return false;
+        }
+
+        return true;
+
+    }
+
+    ValidatedInputProto.updateError = function (display, message) {
+
+        if(display) {
+            this.error.className = "row error";
+            this.errorMessage.innerHTML = message;
+            (this.tooltip.isOpen) ? (this.tooltip.toggle(), this.tooltip.toggle()): null;
+        } else {
+            this.error.className = "row error hide";
+        }
+
+    };
+
+    ValidatedInputProto.observedAttributes = function () {
+
+        return ["value", "lastKeyPressed"];
+
+    };
+
+    // Fires when an attribute was added, removed, or updated
+    ValidatedInputProto.attributeChangedCallback = function(attr, oldVal, newVal) {
+
+        if (attr === 'value') {
+            this.setValue(newVal);
+        }
+
+        if(attr === 'lastKeyPressed') {
+            this.setLastKeyPressed(newVal);
+        }
+
+    };
+
+    ValidatedInputProto.setMin = function(min) {
+
+        this.min = min;
+    }
+
+    ValidatedInputProto.setMax = function(max) {
+
+        this.max = max;
+
+    }
+
+    ValidatedInputProto.setValid = function(isValid) {
+
+        if(isValid) {
+
+            this.setAttribute("valid", "");
+
+        } else {
+
+            this.removeAttribute("valid");
+
+        }
+    }
+
+    ValidatedInputProto.setLastKeyPressed = function(key) {
+
+        this.lastKeyPressed = key;
+
+    };
+
+    ValidatedInputProto.setName = function(name) {
+
+        this.name = name;
+        this.label.innerHTML = this.name;
+
+    };
+
+    // Sets new value to "value" attribute
+    ValidatedInputProto.setValue = function(val) {
+        this.value = val;
+
+        // Sets "value" value into <strong>
+        this.input.value = this.value;
+    };
+
+    // Registers <validated-input> in the main document
+    window.MyElement = thatDoc.registerElement('validated-input', {
+        prototype: ValidatedInputProto
+    });
+})(window, document);
+</script>
